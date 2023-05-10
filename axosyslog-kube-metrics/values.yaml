@@ -1,0 +1,69 @@
+nameOverride: ""
+fullnameOverride: ""
+
+axosyslog-collector:
+  config:
+    sources:
+      kubernetes:
+        enabled: true
+    destinations:
+      network: []
+      # - transport: tcp
+      #   address: localhost
+      #   port: 12345
+      #   template: "$(format-json .*)"
+
+      opensearch: []
+      # - address: "opensearch-cluster-master"
+      #   index: "test-index"
+      #   user: "admin"
+      #   password: "admin"
+      #   tls:
+      #     peerVerify: false
+      #   template: "$(format-json --scope rfc5424 --exclude DATE --key ISODATE @timestamp=${ISODATE} k8s=$(format-json .k8s.* --shift-levels 2 --exclude .k8s.log))"
+
+  daemonset:
+    annotations:
+      demo-syslog-ng-exporter/export: "true"
+
+  extraVolumeMounts:
+    - mountPath: /var/lib/syslog-ng
+      name: ctl-volume
+  extraVolumes:
+    - name: ctl-volume
+      emptyDir: {}
+
+prometheus:
+  alertmanager:
+    enabled: false
+  kube-state-metrics:
+    enabled: false
+  prometheus-node-exporter:
+    enabled: false
+  prometheus-pushgateway:
+    enabled: false
+
+grafana:
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        url: 'http://{{ printf "%s-prometheus-server" .Release.Name }}'
+        access: proxy
+        isDefault: true
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+    default: "axosyslog-kube-metrics-config-dashboards"

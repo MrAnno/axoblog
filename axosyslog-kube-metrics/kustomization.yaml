@@ -1,0 +1,7 @@
+resources:
+- resources.yaml
+
+patches:
+- path: demo-syslog-ng-exporter.yaml
+  target:
+    annotationSelector: demo-syslog-ng-exporter/export=true

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: axosyslog-kube-metrics
+description: A example Helm chart for Kubernetes logging based on AxoSyslog
+type: application
+version: 0.1.0
+appVersion: "4.2.0"
+
+dependencies:
+- name: axosyslog-collector
+  version: "^0"
+  repository: "https://axoflow.github.io/axosyslog-charts"
+- name: prometheus
+  version: "^21.0"
+  repository: "https://prometheus-community.github.io/helm-charts"
+- name: grafana
+  version: "^6.56"
+  repository: "https://grafana.github.io/helm-charts"

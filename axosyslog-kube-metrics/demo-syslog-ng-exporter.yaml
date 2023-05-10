@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: patch-exporter
+spec:
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9577"
+    spec:
+      containers:
+        - name: demo-syslog-ng-exporter
+          image: "ghcr.io/axoflow/axosyslog:4.2.0"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cat <<EOF > /demo-syslog-ng-exporter.py
+              #!/usr/bin/env python3
+
+              from http.server import HTTPServer, BaseHTTPRequestHandler
+              import subprocess
+
+              class DemoSyslogNgExporter(BaseHTTPRequestHandler):
+                  def do_GET(self):
+                      self.send_response(200)
+                      self.send_header('Content-type', 'text/plain; version=0.0.4; charset=utf-8')
+                      self.end_headers()
+                      output = subprocess.check_output(['syslog-ng-ctl', 'stats', 'prometheus'])
+                      self.wfile.write(output)
+
+              server_address = ('', 9577)
+              httpd = HTTPServer(server_address, DemoSyslogNgExporter)
+              httpd.serve_forever()
+              EOF
+              python ./demo-syslog-ng-exporter.py
+          volumeMounts:
+            - name: ctl-volume
+              mountPath: /var/lib/syslog-ng

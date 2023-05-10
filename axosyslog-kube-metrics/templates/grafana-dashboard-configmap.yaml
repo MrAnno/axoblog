@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: axosyslog-kube-metrics-config-dashboards
+  labels:
+    grafana_dashboard: "1"
+data:
+  kubernetes.json: |
+{{ .Files.Get "grafana-dashboard-axosyslog.json" | indent 4 }}
